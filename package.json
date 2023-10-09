@@ -1,6 +1,6 @@
 {
   "name": "wetty",
-  "version": "2.7.0",
+  "version": "2.7.0-1",
   "description": "WeTTY = Web + TTY. Terminal access in browser over http/https",
   "homepage": "https://github.com/butlerx/wetty",
   "license": "MIT",
@@ -114,8 +114,8 @@
     "response-time": "^2.3.2",
     "sass": "^1.54.4",
     "serve-static": "^1.15.0",
-    "socket.io": "^4.5.1",
-    "socket.io-client": "^4.5.1",
+    "socket.io": "^4.7.2",
+    "socket.io-client": "^4.7.2",
     "toastify-js": "^1.9.1",
     "url-value-parser": "^2.1.0",
     "winston": "^3.3.3",

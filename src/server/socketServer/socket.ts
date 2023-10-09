@@ -31,6 +31,13 @@ export const listen = (
     {
       path: `${path}/socket.io`,
       pingInterval: 3000,
-      pingTimeout: 7000,
+      pingTimeout: 60000,
+      maxHttpBufferSize: 1e8,
+      connectionStateRecovery: {
+	    // the backup duration of the sessions and the packets
+	    maxDisconnectionDuration: 2 * 60 * 1000,
+	    // whether to skip middlewares upon successful recovery
+	    skipMiddlewares: true,
+      },
     },
   );

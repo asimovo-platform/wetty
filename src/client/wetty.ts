@@ -22,6 +22,7 @@ function onResize(term: Term): () => void {
 }
 
 socket.on('connect', () => {
+  console.log("Wetty connect event")
   const term = terminal(socket);
   if (_.isUndefined(term)) return;
 
@@ -65,6 +66,13 @@ socket.on('connect', () => {
     .on('logout', disconnect)
     .on('disconnect', disconnect)
     .on('error', (err: string | null) => {
+      console.log("Wetty error", err)
       if (err) disconnect(err);
+    });
+    socket.io.on("reconnect_attempt", () => {
+	console.log("Wetty manager tries to reconnect")
+    });
+    socket.io.on("reconnect", () => {
+	console.log("Wetty manager successfully reconnected")
     });
 });

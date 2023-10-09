@@ -26,4 +26,4 @@ RUN apk add -U coreutils openssh-client sshpass && \
     mkdir ~/.ssh
 
 EXPOSE 8000
-CMD [ "pnpm", "start" ]
+CMD [ "npm", "start" ]

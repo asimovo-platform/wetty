@@ -1,5 +1,9 @@
 lockfileVersion: '6.0'
 
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
 importers:
 
   .:
@@ -68,10 +72,10 @@ importers:
         specifier: ^1.15.0
         version: 1.15.0
       socket.io:
-        specifier: ^4.5.1
+        specifier: ^4.7.2
         version: 4.7.2
       socket.io-client:
-        specifier: ^4.5.1
+        specifier: ^4.7.2
         version: 4.7.2
       toastify-js:
         specifier: ^1.9.1
@@ -4367,6 +4371,7 @@ packages:
   /iconv-lite@0.6.3:
     resolution: {integrity: sha512-4fCk79wshMdzMp2rH06qWrJE4iolqLhCUH+OiuIgU++RB0+94NlDL81atO7GX55uUKueo0txHNtvEyI6D7WdMw==}
     engines: {node: '>=0.10.0'}
+    requiresBuild: true
     dependencies:
       safer-buffer: 2.1.2
     optional: true
