@@ -45,7 +45,7 @@ export const html = (base: string, title: string): RequestHandler => (
   _req: Request,
   res: Response,
 ): void => {
-  res.send(
+  res.status(200).send(
     render(
       title,
       `${base}/favicon.ico`,
