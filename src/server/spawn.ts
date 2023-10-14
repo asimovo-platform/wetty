@@ -6,18 +6,29 @@ import { xterm } from './shared/xterm.js';
 import { envVersionOr } from './spawn/env.js';
 import type SocketIO from 'socket.io';
 
-const kills = new Map<String, ReturnType<typeof setTimeout>>();
+
+type LinkState = {
+    term: ReturnType<typeof pty.spawn>;
+    timeout: ReturnType<typeof setTimeout>;
+}
+const kills = new Map<String, LinkState>();
 
 export async function spawn(
   socket: SocketIO.Socket,
   args: string[],
 ): Promise<void> {
   const logger = getLogger();
-
   if (socket.recovered && kills.has(socket.id)){
-	clearTimeout(kills.get(socket.id));
-	logger.info('Socket connection recovered, not respawning PTY.');
-	return
+	const linkstate = kills.get(socket.id);
+	if (linkstate){
+		clearTimeout(linkstate.timeout);
+		socket.on('input', input => {
+		      if (!isUndefined(linkstate.term)) linkstate.term.write(input);
+		})
+		linkstate.term.resume()
+		logger.info('Socket connection recovered, not respawning PTY.');
+		return
+	}
   }
   const version = await envVersionOr(0);
   const cmd = version >= 9 ? ['-S', ...args] : args;
@@ -52,11 +63,16 @@ export async function spawn(
     })
     .on('disconnect', () => {
      //delay the kill for the maxDisconnectionDuration, on new Spawn check if socket.reconnected, cancel kill. Same socket is passed, so no new listeners necessary.
-      kills.set(socket.id,setTimeout(()=>{
-		kills.delete(socket.id)
-		term.kill();
-		logger.info('Process exited', { code: 0, pid });
-      }, 5000));
+      term.pause();
+      const linkstate: LinkState = {
+		term: term,
+		timeout: setTimeout(()=>{
+			kills.delete(socket.id)
+			term.kill();
+			logger.info('Process exited', { code: 0, pid });
+		}, 5000)
+      };
+      kills.set(socket.id, linkstate);
     })
     .on('commit', size => {
       if (fcServer.commit(size)) {
