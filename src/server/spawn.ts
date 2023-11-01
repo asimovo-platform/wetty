@@ -22,8 +22,12 @@ export async function spawn(
 	const linkstate = kills.get(socket.id);
 	if (linkstate){
 		clearTimeout(linkstate.timeout);
-		socket.on('input', input => {
-		      if (!isUndefined(linkstate.term)) linkstate.term.write(input);
+		//Make sure our listeners are still valid (re-registering them)
+		socket.on('resize', ({ cols, rows }) => {
+			term.resize(cols, rows);
+		})
+		.on('input', input => {
+			if (!isUndefined(linkstate.term)) linkstate.term.write(input);
 		})
 		linkstate.term.resume()
 		logger.info('Socket connection recovered, not respawning PTY.');
@@ -70,7 +74,7 @@ export async function spawn(
 			kills.delete(socket.id)
 			term.kill();
 			logger.info('Process exited', { code: 0, pid });
-		}, 5000)
+		}, 60 * 1000) 
       };
       kills.set(socket.id, linkstate);
     })
