@@ -22,13 +22,29 @@ function onResize(term: Term): () => void {
 }
 
 socket.on('connect', () => {
-  console.log("Wetty connect event")
+  console.log('Wetty connect event');
   const term = terminal(socket);
   if (_.isUndefined(term)) return;
 
   if (!_.isNull(overlay)) overlay.style.display = 'none';
   window.addEventListener('beforeunload', verifyPrompt, false);
   window.addEventListener('resize', onResize(term), false);
+  window.addEventListener(
+    'message',
+    (event) => {
+      if (event.data) {
+        // if event.data starts with 'cmd:', we treat it as a command
+        if (event.data.startsWith('cmd:')) {
+          let cmd = event.data.replace('cmd:', '');
+          console.log('command received: ', cmd);
+          socket.emit('input', cmd);
+        } else {
+          console.log('message received: ', event.data);
+        }
+      }
+    },
+    false,
+  );
 
   term.resizeTerm();
   term.focus();
@@ -39,9 +55,11 @@ socket.on('connect', () => {
   term.onData((data: string) => {
     socket.emit('input', data);
   });
+
   term.onResize((size: { cols: number; rows: number }) => {
     socket.emit('resize', size);
   });
+
   socket
     .on('data', (data: string) => {
       const remainingData = fileDownloader.buffer(data);
@@ -60,19 +78,25 @@ socket.on('connect', () => {
       }
     })
     .on('login', () => {
+      console.log('Wetty login event');
       term.writeln('');
       term.resizeTerm();
+
+      // notify main page that the terminal is ready
+      window.parent.window.postMessage('terminal: ready', '*');
     })
     .on('logout', disconnect)
     .on('disconnect', disconnect)
     .on('error', (err: string | null) => {
-      console.log("Wetty error", err)
+      console.log('Wetty error', err);
       if (err) disconnect(err);
     });
-    socket.io.on("reconnect_attempt", () => {
-	console.log("Wetty manager tries to reconnect")
-    });
-    socket.io.on("reconnect", () => {
-	console.log("Wetty manager successfully reconnected")
-    });
+
+  socket.io.on('reconnect_attempt', () => {
+    console.log('Wetty manager tries to reconnect');
+  });
+
+  socket.io.on('reconnect', () => {
+    console.log('Wetty manager successfully reconnected');
+  });
 });
