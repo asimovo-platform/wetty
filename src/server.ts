@@ -75,6 +75,8 @@ export async function decorateServerWithSsh(
     logger.info('Connection accepted.');
     wettyConnections.inc();
 
+    
+
     try {
       const args = await getCommand(socket, ssh, command, forcessh);
       logger.debug('Command Generated', { cmd: args.join(' ') });

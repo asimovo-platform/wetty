@@ -1,7 +1,7 @@
 {
   ssh: {
     // user:    'username',                     // default user to use when ssh-ing
-    host:       'localhost',                    // Server to ssh to
+    host:       '192.168.5.1',                    // Server to ssh to
     auth:       'password',                     // shh authentication, method. Defaults to "password", you can use "publickey,password" instead'
     // pass:    "password",                     // Password to use when sshing
     // key:     "",                             // path to an optional client private key, connection will be password-less and insecure!
@@ -17,7 +17,7 @@
     bypassHelmet: false,                               // Disable Helmet security checks
   },
 
-  forceSSH: false,  // Force sshing to local machine over login if running as root
+  forceSSH: true,  // Force sshing to local machine over login if running as root
   command: 'login', // Command to run on server. Login will use ssh if connecting to different server
   /*
   ssl:{

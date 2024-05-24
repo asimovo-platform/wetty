@@ -7,6 +7,7 @@ import { logger } from '../../shared/logger.js';
 import type { SSLBuffer } from '../../shared/interfaces.js';
 import type express from 'express';
 
+
 export const listen = (
   app: express.Express,
   host: string,
@@ -22,7 +23,7 @@ export const listen = (
             connection: 'https',
           });
         })
-      : http.createServer(app).listen(port, host, () => {
+      : http.createServer({ keepAlive:false },app).listen(port, host, () => {
           logger().info('Server started', {
             port,
             connection: 'http',
@@ -30,9 +31,10 @@ export const listen = (
         }),
     {
       path: `${path}/socket.io`,
-      pingInterval: 3000,
-      pingTimeout: 60000,
-      maxHttpBufferSize: 1e8,
+      pingInterval: 20000,
+      pingTimeout: 66000,
+      maxHttpBufferSize: 5e8,
+      serveClient: false,
       connectionStateRecovery: {
 	    // the backup duration of the sessions and the packets
 	    maxDisconnectionDuration: 2 * 60 * 1000,

@@ -127,6 +127,9 @@ if (!opts.help) {
     .then((config) => mergeCliConf(opts, config))
     .then((conf) => {
       setLevel(conf.logLevel);
+      process.on('SIGINT', () => {
+          console.trace();
+      })
       start(conf.ssh, conf.server, conf.command, conf.forceSSH, conf.ssl);
     })
     .catch((err: Error) => {

@@ -35,7 +35,7 @@ socket.on('connect', () => {
       if (event.data) {
         // if event.data starts with 'cmd:', we treat it as a command
         if (event.data.startsWith('cmd:')) {
-          let cmd = event.data.replace('cmd:', '');
+          const cmd = event.data.replace('cmd:', '');
           console.log('command received: ', cmd);
           socket.emit('input', cmd);
         } else {
