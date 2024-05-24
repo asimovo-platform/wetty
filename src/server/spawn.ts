@@ -13,13 +13,10 @@ type LinkState = {
 }
 const kills = new Map<string, LinkState>();
 
-export async function spawn(
-  socket: SocketIO.Socket,
-  args: string[],
-): Promise<void> {
-  const logger = getLogger();
-  const attachListeners = function (socket: SocketIO.Socket, term: pty.IPty){
-	 socket
+function attachListeners(socket: SocketIO.Socket, term: pty.IPty, fcServer: FlowControlServer){
+     const logger = getLogger();
+     const { pid } = term;
+     socket
 		.on('resize', ({ cols, rows }) => {
 			term.resize(cols, rows);
 	        })
@@ -43,14 +40,21 @@ export async function spawn(
 			if (fcServer.commit(size)) {
 				term.resume();
 			}
-	  });
-  }
+      });
+}
+
+export async function spawn(
+  socket: SocketIO.Socket,
+  args: string[],
+): Promise<void> {
+  const logger = getLogger();
+  const fcServer = new FlowControlServer();
   if (socket.recovered && kills.has(socket.id)){
 	const linkstate = kills.get(socket.id);
 	if (linkstate && linkstate.term){
 		clearTimeout(linkstate.timeout);
 		// Make sure our listeners are still valid (re-registering them)
-                attachListeners(socket,linkstate.term)
+                attachListeners(socket,linkstate.term,fcServer)
 		linkstate.term.resume()
 		logger.info('Socket connection recovered, not respawning PTY.');
 		return
@@ -66,8 +70,8 @@ export async function spawn(
   const address = args[0] === 'ssh' ? args[1] : 'localhost';
   logger.info('Process Started on behalf of user', { pid, address });
   socket.emit('login');
-  term.on('exit', (code: number) => {
-    logger.info('Process exited', { code, pid });
+  term.onExit((ev) => {
+    logger.info('Process exited:', ev.exitCode, ':', pid);
     socket.emit('logout');
     socket
       .removeAllListeners('disconnect')
@@ -75,12 +79,11 @@ export async function spawn(
       .removeAllListeners('input');
   });
   const send = tinybuffer(socket, 2, 524288);
-  const fcServer = new FlowControlServer();
-  term.on('data', (data: string) => {
+  term.onData((data: string) => {
     send(data);
     if (fcServer.account(data.length)) {
       term.pause();
     }
   });
-  attachListeners(socket,term);
+  attachListeners(socket,term,fcServer);
 }
