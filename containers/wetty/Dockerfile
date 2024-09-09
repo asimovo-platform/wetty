@@ -1,4 +1,4 @@
-FROM node:current-bookworm as base
+FROM node:current-bookworm AS base
 
 RUN apt install -y python3 git
 ENV PNPM_HOME="/pnpm"
@@ -21,13 +21,15 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 RUN pnpm run build
 
 FROM node:current-bookworm-slim
-LABEL maintainer="butlerx@notthe.cloud"
+LABEL maintainer="ludo@asimovo.com"
 WORKDIR /usr/src/app
 ENV NODE_ENV=production
 EXPOSE 3000
+COPY asimovo_webcert /usr/src/app/
+RUN chmod 600 /usr/src/app/asimovo_webcert
 COPY --from=prod-deps /usr/src/app/node_modules /usr/src/app/node_modules
 COPY --from=build /usr/src/app/build /usr/src/app/build
-COPY package.json /usr/src/app
+COPY package.json /usr/src/app/
 
 RUN npm install -g nodemon
 RUN apt update -y
